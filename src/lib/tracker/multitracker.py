@@ -299,7 +299,8 @@ class JDETracker(object):
         STrack.multi_predict(strack_pool)
         dists = matching.embedding_distance(strack_pool, detections)
         #dists = matching.iou_distance(strack_pool, detections)
-        dists = matching.fuse_motion(self.kalman_filter, dists, strack_pool, detections)
+        # huwei_remark: disable position/motion related
+        #dists = matching.fuse_motion(self.kalman_filter, dists, strack_pool, detections)
         matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.4)
 
         for itracked, idet in matches:
@@ -312,39 +313,39 @@ class JDETracker(object):
                 track.re_activate(det, self.frame_id, new_id=False)
                 refind_stracks.append(track)
 
-        ''' Step 3: Second association, with IOU'''
-        detections = [detections[i] for i in u_detection]
-        r_tracked_stracks = [strack_pool[i] for i in u_track if strack_pool[i].state == TrackState.Tracked]
-        dists = matching.iou_distance(r_tracked_stracks, detections)
-        matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.5)
-
-        for itracked, idet in matches:
-            track = r_tracked_stracks[itracked]
-            det = detections[idet]
-            if track.state == TrackState.Tracked:
-                track.update(det, self.frame_id)
-                activated_starcks.append(track)
-            else:
-                track.re_activate(det, self.frame_id, new_id=False)
-                refind_stracks.append(track)
-                
-        for it in u_track:
-            track = r_tracked_stracks[it]
-            if not track.state == TrackState.Lost:
-                track.mark_lost()
-                lost_stracks.append(track)
-
-        '''Deal with unconfirmed tracks, usually tracks with only one beginning frame'''
-        detections = [detections[i] for i in u_detection]
-        dists = matching.iou_distance(unconfirmed, detections)
-        matches, u_unconfirmed, u_detection = matching.linear_assignment(dists, thresh=0.7)
-        for itracked, idet in matches:
-            unconfirmed[itracked].update(detections[idet], self.frame_id)
-            activated_starcks.append(unconfirmed[itracked])
-        for it in u_unconfirmed:
-            track = unconfirmed[it]
-            track.mark_removed()
-            removed_stracks.append(track)
+#        ''' Step 3: Second association, with IOU'''
+#        detections = [detections[i] for i in u_detection]
+#        r_tracked_stracks = [strack_pool[i] for i in u_track if strack_pool[i].state == TrackState.Tracked]
+#        dists = matching.iou_distance(r_tracked_stracks, detections)
+#        matches, u_track, u_detection = matching.linear_assignment(dists, thresh=0.5)
+#
+#        for itracked, idet in matches:
+#            track = r_tracked_stracks[itracked]
+#            det = detections[idet]
+#            if track.state == TrackState.Tracked:
+#                track.update(det, self.frame_id)
+#                activated_starcks.append(track)
+#            else:
+#                track.re_activate(det, self.frame_id, new_id=False)
+#                refind_stracks.append(track)
+#                
+#        for it in u_track:
+#            track = r_tracked_stracks[it]
+#            if not track.state == TrackState.Lost:
+#                track.mark_lost()
+#                lost_stracks.append(track)
+#
+#        '''Deal with unconfirmed tracks, usually tracks with only one beginning frame'''
+#        detections = [detections[i] for i in u_detection]
+#        dists = matching.iou_distance(unconfirmed, detections)
+#        matches, u_unconfirmed, u_detection = matching.linear_assignment(dists, thresh=0.7)
+#        for itracked, idet in matches:
+#            unconfirmed[itracked].update(detections[idet], self.frame_id)
+#            activated_starcks.append(unconfirmed[itracked])
+#        for it in u_unconfirmed:
+#            track = unconfirmed[it]
+#            track.mark_removed()
+#            removed_stracks.append(track)
 
         """ Step 4: Init new stracks"""
         for inew in u_detection:

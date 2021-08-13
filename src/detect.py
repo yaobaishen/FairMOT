@@ -125,7 +125,7 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
 
 def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), exp_name='demo',
          save_images=False, save_videos=False, show_image=True):
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     result_root = os.path.join(data_root, '..', 'dets', exp_name)
     mkdir_if_missing(result_root)
     data_type = 'mot'
